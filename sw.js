@@ -1,52 +1,77 @@
-const CACHE_NAME = 'app-cache-v1';
-
-// ഓഫ്‌ലൈനായി ലഭ്യമാകേണ്ട പ്രധാന ഫയലുകൾ
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'zen-pdf-liquid-v3.0';
+const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  // നിങ്ങളുടെ CSS/JS/Image ഫയലുകൾ ഇവിടെ ചേർക്കുക (ഉദാ: './style.css', './app.js')
+  './assets/icons/icon.svg',
+  './css/liquid-glass.css',
+  './css/font-awesome.min.css',
+  './webfonts/fa-solid-900.woff2',
+  './webfonts/fa-regular-400.woff2',
+  './webfonts/fa-brands-400.woff2',
+  './js/vendor/pdf-lib.min.js',
+  './js/vendor/pdf.min.js',
+  './js/vendor/pdf.worker.min.js',
+  './js/vendor/jszip.min.js',
+  './js/water-effects.js',
+  './js/pdf-engine.js',
+  './js/editor.js',
+  './js/app.js'
 ];
 
-// Install Event: ഫയലുകൾ കാഷെ ചെയ്യുന്നു
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all assets');
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+  );
 });
 
-// Activate Event: പഴയ കാഷെ ക്ലിയർ ചെയ്യുന്നു
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Clearing Old Cache');
-            return caches.delete(cache);
-          }
-        })
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch Event: നെറ്റ്‌വർക്ക് ഇല്ലെങ്കിലും കാഷെയിൽ നിന്ന് ഡാറ്റ നൽകുന്നു (Cache First Strategy)
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // കാഷെയിൽ ഉണ്ടെങ്കിൽ അത് നൽകുക, ഇല്ലെങ്കിൽ നെറ്റ്‌വർക്കിൽ നിന്ന് എടുക്കുക
-      return cachedResponse || fetch(event.request).catch(() => {
-        // ഓഫ്‌ലൈൻ ഫാൾബാക്ക് (ഓപ്ഷണൽ)
-        if (event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('./index.html');
-        }
-      });
+      if (cachedResponse) {
+        // Return cache hit, and opportunistically fetch in background
+        fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
+            }
+          })
+          .catch(() => {});
+        return cachedResponse;
+      }
+
+      // If not in cache, fetch over network and cache it
+      return fetch(event.request)
+        .then((networkResponse) => {
+          if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
+            return networkResponse;
+          }
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return networkResponse;
+        })
+        .catch(() => {
+          // If offline and request is for page navigation, fallback to index.html
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
     })
   );
 });

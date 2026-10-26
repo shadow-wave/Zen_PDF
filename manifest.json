@@ -1,22 +1,41 @@
 {
-  "name": "My Web App",
-  "short_name": "App",
-  "description": "An offline-capable Progressive Web Application",
+  "name": "Zen PDF Studio — Liquid Glass 2027",
+  "short_name": "Zen PDF",
+  "description": "Ultra-private, 100% offline suite of advanced PDF utilities with Apple Liquid Glass iOS 27 aesthetics by Aravind o k",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "orientation": "portrait-primary",
+  "background_color": "#080c16",
+  "theme_color": "#6366f1",
+  "orientation": "any",
   "icons": [
     {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "./assets/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Merge PDFs",
+      "url": "./index.html#merge",
+      "description": "Combine multiple PDFs into one document"
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "name": "Edit PDF",
+      "url": "./index.html#edit",
+      "description": "Annotate, erase, and edit PDF documents"
+    },
+    {
+      "name": "Compress PDF",
+      "url": "./index.html#compress",
+      "description": "Reduce file size offline"
+    },
+    {
+      "name": "Sign PDF",
+      "url": "./index.html#sign",
+      "description": "Digitally sign and stamp PDF"
     }
   ]
 }
