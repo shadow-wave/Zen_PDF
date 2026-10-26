@@ -132,7 +132,7 @@ Zen PDF ഇപ്പോൾ Apple VisionOS / iPadOS Bento Studio Layout-ൽ സ�
 **Aravind o k**
 - **GitHub**: [@Shadow-wave](https://github.com/Shadow-wave)
 - **Email**: [aravindok6@gmail.com](mailto:aravindok6@gmail.com)
-- **Phone**: +91 6238 291 791
+
 
 ---
 
